@@ -1,0 +1,106 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: stirling-pdf
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: stirling-pdf-sa
+  namespace: stirling-pdf
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: stirling-pdf-deployment
+  namespace: stirling-pdf
+  labels:
+    app: stirling-pdf
+    env: production
+  annotations:
+    maintainer: "Baptiste Rabouin - baptiste.rabouin@gmail.com"
+    version: "1.0"
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: stirling-pdf
+  template:
+    metadata:
+      labels:
+        app: stirling-pdf
+    spec:
+      serviceAccountName: stirling-pdf-sa
+      containers:
+      - name: stirling-pdf
+        image: frooodle/s-pdf:latest
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "500m"
+          limits:
+            memory: "512Mi"
+            cpu: "1000m"
+        env:
+        - name: DOCKER_ENABLE_SECURITY
+          value: "false"
+        - name: INSTALL_BOOK_AND_ADVANCED_HTML_OPS
+          value: "false"
+        - name: LANGS
+          value: "fr_FR"
+        ports:
+        - containerPort: 8080
+#        livenessProbe:
+#          httpGet:
+#            path: /healthz
+#            port: 8080
+#          initialDelaySeconds: 5
+#          periodSeconds: 10
+#        readinessProbe:
+#          httpGet:
+#            path: /readiness
+#            port: 8080
+#          initialDelaySeconds: 5
+#          periodSeconds: 10
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: stirling-pdf-service
+  namespace: stirling-pdf
+spec:
+  type: ClusterIP
+  selector:
+    app: stirling-pdf
+  ports:
+  - protocol: TCP
+    port: 8080
+    targetPort: 8080
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: stirling-pdf-ingress
+  namespace: stirling-pdf
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/proxy-body-size: 10m
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"  # Gérer l'auto-redirection vers HTTPS si nécessaire
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "false"  # Redirection forcée HTTPS désactivée
+spec:
+  ingressClassName: nginx  # Classe Ingress pour le contrôleur NGINX
+  rules:
+  - host: ""  # Nom de domaine ou laisser vide pour l'accès via l'IP
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: stirling-pdf-service
+            port:
+              number: 8080
