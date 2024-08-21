@@ -1,0 +1,13 @@
+# Create a configMap for manage Ip in loadbalancing
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  namespace: metallb-system
+  name: config
+data:
+  config: |
+    address-pools:
+    - name: default
+      protocol: layer2
+      addresses:
+      - 192.168.1.230-192.168.1.250  # Pool of IP Address for assign to an application in LoadBalancing if any ip address is assigned

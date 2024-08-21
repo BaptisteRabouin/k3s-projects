@@ -1,8 +1,10 @@
+# Create namespace for application
 apiVersion: v1
 kind: Namespace
 metadata:
   name: stirling-pdf
 
+# Create a service account for follow good practices and not use root
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -10,6 +12,7 @@ metadata:
   name: stirling-pdf-sa
   namespace: stirling-pdf
 
+# Create deployment
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -35,7 +38,7 @@ spec:
       serviceAccountName: stirling-pdf-sa
       containers:
       - name: stirling-pdf
-        image: frooodle/s-pdf:latest
+        image: frooodle/s-pdf:latest # it's recommandation of edditor to user latest tag
         resources:
           requests:
             memory: "128Mi"
@@ -65,6 +68,7 @@ spec:
 #          initialDelaySeconds: 5
 #          periodSeconds: 10
 
+# Create a service network with loadbalancer in link with MetalLB
 ---
 apiVersion: v1
 kind: Service
@@ -73,7 +77,7 @@ metadata:
   namespace: stirling-pdf
 spec:
   type: LoadBalancer
-  loadBalancerIP: 192.168.1.231
+  loadBalancerIP: 192.168.1.231 # Assign an IP Static
   selector:
     app: stirling-pdf
   ports:
@@ -81,6 +85,7 @@ spec:
     port: 8080
     targetPort: 8080
 
+# Create a policy to ensure a continuity of service
 ---
 apiVersion: policy/v1
 kind: PodDisruptionBudget
