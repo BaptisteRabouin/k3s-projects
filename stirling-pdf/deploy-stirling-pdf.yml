@@ -72,38 +72,14 @@ metadata:
   name: stirling-pdf-service
   namespace: stirling-pdf
 spec:
-  type: ClusterIP
+  type: LoadBalancer
+  loadBalancerIP: 192.168.1.231
   selector:
     app: stirling-pdf
   ports:
   - protocol: TCP
     port: 8080
     targetPort: 8080
-
----
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: stirling-pdf-ingress
-  namespace: stirling-pdf
-  annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
-    nginx.ingress.kubernetes.io/proxy-body-size: 10m
-    nginx.ingress.kubernetes.io/ssl-redirect: "false"  # Gérer l'auto-redirection vers HTTPS si nécessaire
-    nginx.ingress.kubernetes.io/force-ssl-redirect: "false"  # Redirection forcée HTTPS désactivée
-spec:
-  ingressClassName: nginx  # Classe Ingress pour le contrôleur NGINX
-  rules:
-  - host: ""  # Nom de domaine ou laisser vide pour l'accès via l'IP
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: stirling-pdf-service
-            port:
-              number: 8080
 
 ---
 apiVersion: policy/v1
