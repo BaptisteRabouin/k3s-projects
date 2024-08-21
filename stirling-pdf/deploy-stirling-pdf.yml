@@ -104,3 +104,16 @@ spec:
             name: stirling-pdf-service
             port:
               number: 8080
+
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: stirling-pdf-pdb
+  namespace: stirling-pdf
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: stirling-pdf
+
