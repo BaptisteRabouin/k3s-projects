@@ -43,7 +43,7 @@ spec:
       serviceAccountName: stirling-pdf-sa
       containers:
       - name: stirling-pdf
-        image: frooodle/s-pdf:0.28.2 # it's recommandation of edditor to user latest tag
+        image: frooodle/s-pdf:0.28.2 # not latest tag version for good practices
         resources:
           requests:
             memory: "128Mi"
