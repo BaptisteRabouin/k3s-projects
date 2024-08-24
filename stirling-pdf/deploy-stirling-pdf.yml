@@ -27,6 +27,11 @@ metadata:
     version: "1.0"
 spec:
   replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
   selector:
     matchLabels:
       app: stirling-pdf
@@ -38,7 +43,7 @@ spec:
       serviceAccountName: stirling-pdf-sa
       containers:
       - name: stirling-pdf
-        image: frooodle/s-pdf:latest # it's recommandation of edditor to user latest tag
+        image: frooodle/s-pdf:0.28.2 # it's recommandation of edditor to user latest tag
         resources:
           requests:
             memory: "128Mi"
@@ -78,6 +83,7 @@ metadata:
 spec:
   type: LoadBalancer
   loadBalancerIP: 192.168.1.231 # Assign an IP Static
+  sessionAffinity: ClientIP # Permit to fix the user's session on only one pod for keep a coherence
   selector:
     app: stirling-pdf
   ports:
