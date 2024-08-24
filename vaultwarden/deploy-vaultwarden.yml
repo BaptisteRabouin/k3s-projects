@@ -1,0 +1,137 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: vaultwarden
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: vault-sa
+  namespace: vaultwarden
+
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: vaultwarden-pv
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    path: /volume1/volume-persistent/vaultwarden
+    server: 192.168.1.200
+  persistentVolumeReclaimPolicy: Retain
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: vaultwarden-pvc
+  namespace: vaultwarden
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 500Mi
+  storageClassName: ""
+  volumeName: vaultwarden-pv
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: vaultwarden-token-secret
+  namespace: vaultwarden
+type: Opaque
+data:
+  ADMIN_TOKEN: <YOUR_TOKEN>  # Administration token
+
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vaultwarden-deployment
+  namespace: vaultwarden
+  labels:
+    app: vaultwarden
+    env: production
+  annotations:
+    maintainer: "BaptisteRabouin"
+    version: "1.0"
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  selector:
+    matchLabels:
+      app: vaultwarden
+  template:
+    metadata:
+      labels:
+        app: vaultwarden
+    spec:
+      serviceAccountName: vault-sa
+      containers:
+      - name: vaultwarden
+        image: vaultwarden/server:1.32.0
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "500m"
+          limits:
+            memory: "256Mi"
+            cpu: "1000m"
+        volumeMounts:
+        - name: vaultwarden-data
+          mountPath: /data
+        env:
+        - name: ADMIN_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: vaultwarden-token-secret
+              key: ADMIN_TOKEN
+        ports:
+        - containerPort: 80
+      volumes:
+      - name: vaultwarden-data
+        persistentVolumeClaim:
+          claimName: vaultwarden-pvc
+
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vaultwarden-service
+  namespace: vaultwarden
+spec:
+  type: LoadBalancer
+  loadBalancerIP: 192.168.1.232 # Assign an IP Static
+  sessionAffinity: ClientIP # Keep the session on the same pod for to keep a coherence
+  selector:
+    app: vaultwarden
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: vaultwarden-pdb
+  namespace: vaultwarden
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: vaultwarden
+
