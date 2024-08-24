@@ -1,5 +1,4 @@
 # The command before apply this file is : kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.13.7/config/manifests/metallb-native.yaml
-# It's not use in my production env because it's again in Beta Version. Tha's why i prefer configMap file
 apiVersion: metallb.io/v1beta1 # To test the news features like IPAddressPool and L2Advertisement
 kind: IPAddressPool
 metadata:
