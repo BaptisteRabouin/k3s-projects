@@ -1,4 +1,4 @@
-# Deployment project of the Stirling-PDF application in a Kubernetes environment (K3s in this case)
+# Deployment project of the Stirling-PDF application in a Kubernetes environment
 #### For install metalLB, for to use in order to expose an application in LAN (not on Provider Cloud)
 I use this command :
 
