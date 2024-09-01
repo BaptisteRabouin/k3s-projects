@@ -48,7 +48,7 @@ metadata:
   namespace: vaultwarden
 type: Opaque
 data:
-  ADMIN_TOKEN: UGV0aXRtQGlzY29zdGF1ZCE=  # Administration token
+  ADMIN_TOKEN: My-Token  # Administration token
 
 
 ---
