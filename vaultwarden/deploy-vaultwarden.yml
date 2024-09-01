@@ -19,7 +19,7 @@ spec:
   capacity:
     storage: 500Mi
   accessModes:
-    - ReadWriteMany
+    - ReadWriteOnce
   nfs:
     path: /volume1/volume-persistent/vaultwarden
     server: 192.168.1.200
@@ -33,7 +33,7 @@ metadata:
   namespace: vaultwarden
 spec:
   accessModes:
-    - ReadWriteMany
+    - ReadWriteOnce
   resources:
     requests:
       storage: 100Mi
@@ -48,7 +48,7 @@ metadata:
   namespace: vaultwarden
 type: Opaque
 data:
-  ADMIN_TOKEN: My-Token  # Administration token
+  ADMIN_TOKEN: <my-token> #  Administration token
 
 
 ---
@@ -68,7 +68,7 @@ spec:
   strategy:
     type: RollingUpdate
     rollingUpdate:
-      maxUnavailable: 1
+      maxUnavailable: 0
       maxSurge: 1
   selector:
     matchLabels:
