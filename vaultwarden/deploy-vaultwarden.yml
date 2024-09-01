@@ -48,7 +48,7 @@ metadata:
   namespace: vaultwarden
 type: Opaque
 data:
-  ADMIN_TOKEN: <YOUR_TOKEN>  # Administration token
+  ADMIN_TOKEN: UGV0aXRtQGlzY29zdGF1ZCE=  # Administration token
 
 
 ---
@@ -68,7 +68,7 @@ spec:
   strategy:
     type: RollingUpdate
     rollingUpdate:
-      maxUnavailable: 0
+      maxUnavailable: 1
       maxSurge: 1
   selector:
     matchLabels:
@@ -84,11 +84,11 @@ spec:
         image: vaultwarden/server:1.32.0
         resources:
           requests:
-            memory: "128Mi"
-            cpu: "500m"
-          limits:
             memory: "256Mi"
             cpu: "1000m"
+          limits:
+            memory: "1Gi"
+            cpu: "2000m"
         volumeMounts:
         - name: vaultwarden-data
           mountPath: /data

@@ -1,0 +1,78 @@
+# Création du ServiceAccount
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: restart-sa
+  namespace: vaultwarden
+
+---
+# Définition des rôles et des bindings de rôle
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: restart-pods-role
+  namespace: vaultwarden
+rules:
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["list", "delete"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: restart-pods-rolebinding
+  namespace: vaultwarden
+subjects:
+- kind: ServiceAccount
+  name: restart-sa
+  namespace: vaultwarden
+roleRef:
+  kind: Role
+  name: restart-pods-role
+  apiGroup: rbac.authorization.k8s.io
+
+---
+# Définition du Job
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: restart-vaultwarden-pods-job
+  namespace: vaultwarden
+spec:
+  template:
+    spec:
+      serviceAccountName: restart-sa
+      containers:
+      - name: restart-pods
+        image: bitnami/kubectl:latest
+        command:
+        - /bin/sh
+        - -c
+        - |
+          kubectl delete pods -n vaultwarden -l app=vaultwarden
+      restartPolicy: OnFailure
+
+---
+# Définition du CronJob
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: restart-vaultwarden-pods
+  namespace: vaultwarden
+spec:
+  schedule: "0 2 * * *"  # Chaque jour à 2h du matin
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: restart-sa
+          containers:
+          - name: restart-pods
+            image: bitnami/kubectl:latest
+            command:
+            - /bin/sh
+            - -c
+            - |
+              kubectl delete pods -n vaultwarden -l app=vaultwarden
+          restartPolicy: OnFailure
