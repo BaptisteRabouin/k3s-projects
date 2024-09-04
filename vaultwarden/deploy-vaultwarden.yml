@@ -48,7 +48,7 @@ metadata:
   namespace: vaultwarden
 type: Opaque
 data:
-  ADMIN_TOKEN: <my-token> #  Administration token
+  ADMIN_TOKEN: UGV0aXRtQGlzY29zdGF1ZCE=  #  Administration token
 
 
 ---
@@ -64,7 +64,7 @@ metadata:
     maintainer: "BaptisteRabouin"
     version: "1.0"
 spec:
-  replicas: 3
+  replicas: 1
   strategy:
     type: RollingUpdate
     rollingUpdate:
